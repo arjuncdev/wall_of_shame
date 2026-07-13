@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wall of Shame — UNO Losing Streak Leaderboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0f13;
+    --cream: #f6f0df;
+    --ink: #14120f;
+    --uno-red: #e5192c;
+    --uno-red-dark: #a3101d;
+    --uno-blue: #1368ce;
+    --uno-blue-dark: #0b4691;
+    --uno-green: #12a150;
+    --uno-green-dark: #0b7238;
+    --uno-yellow: #ffcc00;
+    --uno-yellow-dark: #caa000;
+    --wild: #1b1c21;
+    --line: rgba(246,240,223,0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Manrope', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 15% 8%, rgba(229,25,44,0.10), transparent 40%),
+      radial-gradient(circle at 85% 12%, rgba(19,104,206,0.10), transparent 40%),
+      radial-gradient(circle at 50% 95%, rgba(18,161,80,0.08), transparent 45%);
+    overflow-x: hidden;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 56px 24px 80px; }
+
+  /* Header */
+  header { text-align: center; margin-bottom: 64px; }
+
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: 'Manrope', sans-serif; font-weight: 800;
+    font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--uno-yellow);
+    padding: 7px 16px;
+    border: 1px solid rgba(255,204,0,0.35); border-radius: 999px;
+    margin-bottom: 22px;
+  }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--uno-yellow); }
+
+  h1 {
+    font-family: 'Baloo 2', sans-serif; font-weight: 800; font-style: italic;
+    font-size: clamp(46px, 9vw, 96px); line-height: 0.92;
+    margin: 0 0 18px; letter-spacing: -0.01em;
+  }
+  h1 .hl {
+    background: linear-gradient(92deg, var(--uno-red) 0%, var(--uno-red) 34%, var(--uno-blue) 34%, var(--uno-blue) 67%, var(--uno-green) 67%, var(--uno-green) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  .tagline {
+    max-width: 480px; margin: 0 auto;
+    font-size: 16px; line-height: 1.6; color: rgba(246,240,223,0.62); font-weight: 600;
+  }
+  .tagline b { color: var(--cream); font-weight: 800; }
+
+  /* Card */
+  .card {
+    position: relative; border-radius: 22px;
+    padding: 24px 20px 60px; color: var(--cream);
+    box-shadow: 0 18px 40px -14px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.08);
+    transition: transform 0.35s cubic-bezier(.2,.8,.2,1), box-shadow 0.35s ease;
+    outline-offset: 4px;
+  }
+  .card:focus-visible { outline: 3px solid var(--uno-yellow); }
+  .card.red    { background: linear-gradient(155deg, var(--uno-red) 0%, var(--uno-red-dark) 100%); }
+  .card.blue   { background: linear-gradient(155deg, var(--uno-blue) 0%, var(--uno-blue-dark) 100%); }
+  .card.green  { background: linear-gradient(155deg, var(--uno-green) 0%, var(--uno-green-dark) 100%); }
+  .card.yellow { background: linear-gradient(155deg, var(--uno-yellow) 0%, var(--uno-yellow-dark) 100%); color: var(--ink); }
+  .card.yellow .corner      { color: var(--ink); text-shadow: none; }
+  .card.yellow .roast       { color: rgba(20,18,15,0.65); }
+  .card.yellow .stat-bar    { background: rgba(20,18,15,0.12); }
+  .card.yellow .stat-fill   { background: var(--ink); }
+  .card.yellow .stat-label  { color: rgba(20,18,15,0.55); }
+
+  /* Corner fraction */
+  .corner {
+    position: absolute;
+    font-family: 'Baloo 2', sans-serif; font-weight: 800; font-style: italic;
+    line-height: 1; color: var(--cream);
+    text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  }
+  .corner .frac          { display: block; font-size: 20px; letter-spacing: -0.02em; }
+  .corner .frac-label    { display: block; font-size: 7.5px; letter-spacing: 0.14em; font-family:'Manrope',sans-serif; font-style:normal; font-weight:800; opacity:0.8; margin-top:2px; }
+  .corner.tl { top: 14px; left: 16px; text-align: left; }
+  .corner.br { bottom: 14px; right: 16px; text-align: right; transform: rotate(180deg); }
+
+  /* Oval avatar */
+  .oval {
+    width: 118px; height: 150px;
+    margin: 4px auto 10px;
+    background: var(--cream);
+    border-radius: 50% / 38%;
+    transform: rotate(-16deg);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.3), inset 0 0 0 2px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  .oval img {
+    width: 92px; height: 92px; border-radius: 50%;
+    object-fit: cover; transform: rotate(16deg);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+  .oval .initials {
+    width: 92px; height: 92px; border-radius: 50%;
+    transform: rotate(16deg);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 30px;
+    color: var(--cream);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+
+  .rank-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--bg); color: var(--cream);
+    font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 11px;
+    letter-spacing: 0.1em; padding: 5px 12px; border-radius: 999px;
+    box-shadow: inset 0 0 0 1px var(--line); white-space: nowrap;
+  }
+
+  .name { text-align: center; font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 20px; margin: 0 0 8px; }
+
+  /* Loss ratio bar */
+  .stat-wrap { margin: 0 4px 6px; }
+  .stat-bar {
+    height: 5px; border-radius: 99px;
+    background: rgba(246,240,223,0.18);
+    overflow: hidden; margin-bottom: 5px;
+  }
+  .stat-fill {
+    height: 100%; border-radius: 99px;
+    background: var(--cream);
+    transition: width 0.6s cubic-bezier(.4,0,.2,1);
+  }
+  .stat-label {
+    display: flex; justify-content: space-between;
+    font-size: 10px; font-weight: 700; color: rgba(246,240,223,0.65);
+    letter-spacing: 0.04em;
+  }
+  .stat-label .pct { font-weight: 800; color: var(--cream); }
+
+  .roast { text-align: center; font-size: 11px; font-weight: 600; color: rgba(246,240,223,0.65); margin: 0; }
+
+  /* Hero */
+  .hero-slot { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; margin-bottom: 76px; }
+
+  .hero {
+    width: min(380px, 90vw);
+    padding-top: 34px; padding-bottom: 60px;
+    text-align: center;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(229,25,44,0.35), transparent 55%),
+      radial-gradient(circle at 75% 75%, rgba(19,104,206,0.35), transparent 55%),
+      radial-gradient(circle at 25% 80%, rgba(18,161,80,0.30), transparent 50%),
+      var(--wild);
+    position: relative; isolation: isolate;
+  }
+  .hero::before {
+    content: "";
+    position: absolute; inset: -3px; border-radius: 25px; padding: 3px;
+    background: conic-gradient(from 0deg, var(--uno-red), var(--uno-yellow), var(--uno-green), var(--uno-blue), var(--uno-red));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    z-index: -1; animation: spin 7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hero .oval { width: 150px; height: 190px; }
+  .hero .oval img { width: 118px; height: 118px; }
+  .hero .oval .initials { width: 118px; height: 118px; font-size: 38px; }
+
+  .hero-crown {
+    font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 11px;
+    letter-spacing: 0.22em; text-transform: uppercase; color: var(--uno-yellow); margin-bottom: 10px;
+  }
+  .hero .name { font-size: 30px; margin-bottom: 12px; }
+
+  /* Hero big ratio display */
+  .hero-ratio {
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 10px 22px; border-radius: 999px;
+    background: rgba(246,240,223,0.08); box-shadow: inset 0 0 0 1px rgba(246,240,223,0.18);
+    margin-bottom: 14px;
+  }
+  .hero-ratio .big-frac {
+    font-family: 'Baloo 2', sans-serif; font-weight: 800; font-style: italic;
+    font-size: 32px; color: var(--uno-yellow); line-height: 1;
+  }
+  .hero-ratio .divider { width: 1px; height: 32px; background: rgba(246,240,223,0.25); }
+  .hero-ratio .pct-block { text-align: left; }
+  .hero-ratio .pct-num {
+    font-family: 'Baloo 2', sans-serif; font-weight: 800; font-style: italic;
+    font-size: 22px; color: var(--cream); line-height: 1;
+  }
+  .hero-ratio .pct-lbl {
+    font-size: 9px; font-weight: 800; letter-spacing: 0.18em;
+    text-transform: uppercase; color: rgba(246,240,223,0.55);
+  }
+
+  .hero .stat-wrap { margin: 0 20px 10px; }
+  .hero .stat-bar { height: 6px; }
+  .hero .roast { color: rgba(246,240,223,0.6); font-size: 12px; }
+
+  /* Grid */
+  .board-label {
+    text-align: center; font-size: 11px; font-weight: 800;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(246,240,223,0.4); margin: 0 0 28px;
+  }
+  .grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px 22px; }
+  .grid .card { width: 190px; }
+  .grid .card:nth-child(6n+1) { transform: rotate(-3.5deg); }
+  .grid .card:nth-child(6n+2) { transform: rotate(2.5deg); }
+  .grid .card:nth-child(6n+3) { transform: rotate(-1.5deg); }
+  .grid .card:nth-child(6n+4) { transform: rotate(3deg); }
+  .grid .card:nth-child(6n+5) { transform: rotate(-2.5deg); }
+  .grid .card:hover, .grid .card:focus-visible {
+    transform: rotate(0deg) translateY(-8px) scale(1.04);
+    box-shadow: 0 26px 50px -16px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.14);
+    z-index: 5;
+  }
+
+  /* Footer */
+  footer { margin-top: 72px; text-align: center; font-size: 12px; font-weight: 600; color: rgba(246,240,223,0.35); }
+  footer .strip { display: flex; justify-content: center; gap: 6px; margin-bottom: 14px; }
+  footer .swatch { width: 26px; height: 6px; border-radius: 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero::before { animation: none; }
+    .card { transition: none; }
+    .stat-fill { transition: none; }
+  }
+  @media (max-width: 480px) {
+    .wrap { padding: 40px 16px 60px; }
+    header { margin-bottom: 44px; }
+    .grid .card { width: 155px; padding: 16px 14px 52px; }
+    .oval { width: 96px; height: 122px; }
+    .oval img, .oval .initials { width: 74px; height: 74px; }
+    .name { font-size: 17px; }
+    .corner .frac { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="eyebrow"><span class="dot"></span>Uno Night · Season Standings</span>
+    <h1>Wall of<br><span class="hl">Shame</span></h1>
+    <p class="tagline">Ranked by <b>loss ratio</b> — losses ÷ matches played.
+    The higher the ratio, the deeper the shame.</p>
+  </header>
+
+  <div class="hero-slot" id="hero-slot"></div>
+
+  <p class="board-label">The Rest of the Table</p>
+  <div class="grid" id="grid"></div>
+
+  <footer>
+    <div class="strip">
+      <span class="swatch" style="background:var(--uno-red)"></span>
+      <span class="swatch" style="background:var(--uno-yellow)"></span>
+      <span class="swatch" style="background:var(--uno-green)"></span>
+      <span class="swatch" style="background:var(--uno-blue)"></span>
+    </div>
+    <span id="player-count"></span> players ranked · updated whenever someone rage-quits
+  </footer>
+
+</div>
+<script>
+/* ============================================================
+   EDIT HERE — the only thing you need to touch.
+
+   Each player:
+     { name: "Display Name", img: "filename.jpg", played: 5, losses: 3 }
+
+   played  = total games played
+   losses  = how many of those they lost
+
+   Ranking is by loss ratio (losses ÷ played), highest = most shame.
+   To swap a photo: replace the file in the photos/ folder with
+   the same filename — no code changes needed.
+   ============================================================ */
+
+const PLAYERS = [
+  { name: "Anirudh", img: "anirudh.jpg", played: 5, losses: 5 },
+  { name: "Arjun",   img: "arjun.jpg",   played: 5, losses: 3 },
+  { name: "Ninja",   img: "ninja.jpg",   played: 5, losses: 2 },
+  { name: "Raju",    img: "raju.jpg",    played: 5, losses: 1 },
+  { name: "Shiva",   img: "shiva.jpg",   played: 5, losses: 1 },
+  { name: "Shibu",   img: "shibu.jpg",   played: 5, losses: 1 },
+];
+
+/* ---- rendering engine — no need to edit below ---- */
+
+const PHOTOS_DIR = "./photos/";
+
+const ratio  = p => p.played > 0 ? p.losses / p.played : 0;
+const pctStr = p => p.played > 0 ? Math.round(ratio(p) * 100) + "%" : "—";
+const fracStr = p => `${p.losses}/${p.played}`;
+
+const ordinal = n => {
+  const s = ["th","st","nd","rd"], v = n % 100;
+  return n + (s[(v - 20) % 10] || s[v] || s[0]);
+};
+
+const initialsOf = name => name.trim().split(/\s+/).map(w => w[0]).slice(0,2).join("").toUpperCase();
+const AVATAR_TINTS = ["#a3101d","#0b4691","#0b7238","#caa000"];
+
+function avatarNode(player, tintIndex) {
+  if (player.img) {
+    const img = document.createElement("img");
+    img.src = PHOTOS_DIR + player.img;
+    img.alt = player.name;
+    img.onerror = () => {
+      const div = document.createElement("div");
+      div.className = "initials";
+      div.style.background = AVATAR_TINTS[tintIndex % AVATAR_TINTS.length];
+      div.textContent = initialsOf(player.name);
+      img.replaceWith(div);
+    };
+    return img;
+  }
+  const div = document.createElement("div");
+  div.className = "initials";
+  div.style.background = AVATAR_TINTS[tintIndex % AVATAR_TINTS.length];
+  div.textContent = initialsOf(player.name);
+  return div;
+}
+
+const RANK_ROASTS = [
+  "Certified UNO menace — lost more than they breathed.",
+  "Silver medal in losing. Dedication.",
+  "Statistically, just bad at this.",
+  "At least they showed up.",
+];
+const roastFor = rank => RANK_ROASTS[Math.min(rank - 1, RANK_ROASTS.length - 1)];
+const COLOR_CYCLE = ["red", "blue", "green", "yellow"];
+
+function statBarHTML(p) {
+  const pct = p.played > 0 ? Math.round(ratio(p) * 100) : 0;
+  return `
+    <div class="stat-wrap">
+      <div class="stat-bar"><div class="stat-fill" style="width:${pct}%"></div></div>
+      <div class="stat-label">
+        <span>${p.losses} loss${p.losses !== 1 ? "es" : ""} / ${p.played} played</span>
+        <span class="pct">${pctStr(p)}</span>
+      </div>
+    </div>`;
+}
+
+function render() {
+  const sorted = [...PLAYERS].sort((a, b) => ratio(b) - ratio(a));
+
+  // Dense ranking by ratio
+  let ranks = [], rank = 0;
+  sorted.forEach((p, i) => {
+    if (i === 0 || ratio(sorted[i - 1]) !== ratio(p)) rank++;
+    ranks.push(rank);
+  });
+
+  const heroSlot = document.getElementById("hero-slot");
+  const grid     = document.getElementById("grid");
+  heroSlot.innerHTML = "";
+  grid.innerHTML = "";
+
+  sorted.forEach((p, i) => {
+    const r = ranks[i];
+
+    if (r === 1) {
+      const card = document.createElement("div");
+      card.className = "card hero";
+      card.tabIndex = 0;
+      card.innerHTML = `
+        <div class="corner tl"><span class="frac">${fracStr(p)}</span><span class="frac-label">L / PLAYED</span></div>
+        <div class="corner br"><span class="frac">${fracStr(p)}</span><span class="frac-label">L / PLAYED</span></div>
+        <div class="hero-crown">★ Reigning Draw-Four Champion ★</div>
+        <div class="oval"></div>
+        <p class="name"></p>
+        <div class="hero-ratio">
+          <span class="big-frac">${fracStr(p)}</span>
+          <span class="divider"></span>
+          <span class="pct-block">
+            <span class="pct-num">${pctStr(p)}</span>
+            <span class="pct-lbl">Loss Rate</span>
+          </span>
+        </div>
+        ${statBarHTML(p)}
+        <p class="roast">${roastFor(1)}</p>
+      `;
+      card.querySelector(".oval").appendChild(avatarNode(p, i));
+      card.querySelector(".name").textContent = p.name;
+      heroSlot.appendChild(card);
+      return;
+    }
+
+    const color = COLOR_CYCLE[(r - 2) % COLOR_CYCLE.length];
+    const tiedCount = sorted.filter(x => ratio(x) === ratio(p)).length;
+    const badge = tiedCount > 1 ? `TIED · ${ordinal(r)}` : `${ordinal(r)} PLACE`;
+
+    const card = document.createElement("div");
+    card.className = `card ${color}`;
+    card.tabIndex = 0;
+    card.innerHTML = `
+      <div class="rank-badge">${badge}</div>
+      <div class="corner tl"><span class="frac">${fracStr(p)}</span><span class="frac-label">L / PLAYED</span></div>
+      <div class="corner br"><span class="frac">${fracStr(p)}</span><span class="frac-label">L / PLAYED</span></div>
+      <div class="oval"></div>
+      <p class="name"></p>
+      ${statBarHTML(p)}
+      <p class="roast">${roastFor(r)}</p>
+    `;
+    card.querySelector(".oval").appendChild(avatarNode(p, i));
+    card.querySelector(".name").textContent = p.name;
+    grid.appendChild(card);
+  });
+
+  document.getElementById("player-count").textContent = PLAYERS.length;
+}
+
+render();
+</script>
+</body>
+</html>
